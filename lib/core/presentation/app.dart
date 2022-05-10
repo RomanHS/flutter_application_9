@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_9/core/domain/models/Product.dart';
 import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 class App extends StatelessWidget {
@@ -38,18 +39,20 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       load = true;
     });
-    await compute(_loaded, 10000);
+    final dir = await getApplicationSupportDirectory();
+    await compute(_loaded, dir.path);
     setState(() {
       load = false;
     });
   }
 
-  static void _loaded(int col) async {
+  static void _loaded(String path) async {
     final isar = await Isar.open(
-      schemas: [],
+      schemas: [ProductSchema],
+      directory: path,
     );
 
-    final products = List.generate(col, (i) => Product(name: 'Product $i'));
+    final products = List.generate(1000000, (i) => Product(name: 'Product $i'));
 
     await isar.products.putAll(products);
   }
