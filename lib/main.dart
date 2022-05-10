@@ -6,14 +6,14 @@ import 'package:path_provider/path_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   final dir = await getApplicationSupportDirectory();
 
   // Open Isar in the UI isolate
-  final isar = await Isar.open(
+  final Isar isar = await Isar.open(
     schemas: [ProductSchema],
     directory: dir.path,
   );
 
-  runApp(const App());
+  runApp(App.create(isar: isar));
 }
