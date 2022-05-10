@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_9/core/domain/models/Product.dart';
@@ -54,26 +57,76 @@ class _HomePageState extends State<HomePage> {
 
     final products = List.generate(1000000, (i) => Product(name: 'Product $i'));
 
-    await isar.products.putAll(products);
+    log(DateTime.now().toString());
+
+    await isar.writeTxn((isar) async {
+      await isar.products.putAll(products);
+    });
+
+    log(DateTime.now().toString());
   }
 
   @override
   Widget build(BuildContext context) {
-    if (load == true) {
-      return const Center(child: CircularProgressIndicator());
+    Widget _body() {
+      if (load == true) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (res == null) {
+        return Center(
+          child: TextButton(
+            onPressed: loaded,
+            child: const Text('data'),
+          ),
+        );
+      } else {
+        return const Center(
+          child: Text('data'),
+        );
+      }
     }
 
-    if (res == null) {
-      return Center(
-        child: TextButton(
-          onPressed: loaded,
-          child: const Text('data'),
-        ),
-      );
-    } else {
-      return const Center(
-        child: Text('data'),
-      );
-    }
+    return Scaffold(
+      appBar: AppBar(
+        title: const TitleWidget(),
+      ),
+      body: _body(),
+    );
+  }
+}
+
+class TitleWidget extends StatefulWidget {
+  const TitleWidget({Key? key}) : super(key: key);
+
+  @override
+  State<TitleWidget> createState() => _TitleWidgetState();
+}
+
+class _TitleWidgetState extends State<TitleWidget> {
+  late final StreamSubscription<void> productChanged;
+
+  int count = 0;
+
+  @override
+  void initState() {
+    final isar = context.read<Isar>();
+    productChanged = isar.products.watchLazy().listen((_) async {
+      log('event');
+      count = await isar.products.count();
+      setState(() {});
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    productChanged.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(count.toString());
   }
 }
