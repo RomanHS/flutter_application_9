@@ -111,12 +111,15 @@ class _TitleWidgetState extends State<TitleWidget> {
   @override
   void initState() {
     final isar = context.read<Isar>();
+    isar.products.count().then((value) => setState(() => count = value));
     productChanged = isar.products.watchLazy().listen((_) async {
       log('event');
       count = await isar.products.count();
       setState(() {});
     });
     super.initState();
+
+    isar.products.watchObject(0) as Stream<Product>;
   }
 
   @override
