@@ -9,6 +9,8 @@ void main() async {
 
   final dir = await getApplicationSupportDirectory();
 
+  Isar.getInstance();
+
   final Isar isar = await Isar.open(
     schemas: [ProductSchema],
     directory: dir.path,
